@@ -1,0 +1,23 @@
+databases:
+  - name: myapi-db              # Render’s internal name for the DB instance
+    plan: free
+    databaseName: mysite         # Actual database name inside Postgres
+    user: postgres              # You said your DB user is "postgres"
+
+services:
+  - type: web
+    plan: free
+    name: myapi                 # Your project/service name
+    runtime: python
+    buildCommand: './build.sh'
+    startCommand: 'python -m gunicorn myapi.asgi:application -k uvicorn.workers.UvicornWorker'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: myapi-db        # MUST match the database name defined above
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+
